@@ -1,0 +1,14 @@
+{
+  "Mon": {
+    "meal": "Spaghetti Bolognese",
+    "who": "Alice"
+  },
+  "Fri": {
+    "meal": "Homemade Pizza",
+    "who": "Alice"
+  },
+  "Sun": {
+    "meal": "Roast Lamb",
+    "who": "Dad"
+  }
+}
