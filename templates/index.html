@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Points Planner — Credit Card Trip Optimizer</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3350;
+      --accent: #6c8fef;
+      --accent-glow: rgba(108, 143, 239, 0.15);
+      --text: #e8eaf0;
+      --muted: #8b90a8;
+      --green: #4ade80;
+      --gold: #fbbf24;
+      --radius: 12px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    header {
+      padding: 2rem 1.5rem 1.5rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-icon {
+      font-size: 1.8rem;
+    }
+
+    header p {
+      color: var(--muted);
+      margin-top: 0.4rem;
+      font-size: 0.95rem;
+    }
+
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    .form-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .form-card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 1.25rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 600px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    input, select, textarea {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.95rem;
+      padding: 0.6rem 0.85rem;
+      font-family: inherit;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    textarea { resize: vertical; min-height: 70px; }
+
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238b90a8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.85rem center;
+      padding-right: 2.5rem;
+    }
+
+    .btn-submit {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 0.75rem 1.75rem;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      margin-top: 1.25rem;
+      width: 100%;
+    }
+
+    .btn-submit:hover { opacity: 0.9; }
+    .btn-submit:active { transform: scale(0.98); }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Results */
+    #results {
+      display: none;
+    }
+
+    #results h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .result-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem 1.75rem;
+      font-size: 0.95rem;
+      line-height: 1.75;
+    }
+
+    /* Markdown-style rendering */
+    .result-box h1, .result-box h2, .result-box h3 {
+      margin-top: 1.25rem;
+      margin-bottom: 0.5rem;
+      line-height: 1.3;
+    }
+
+    .result-box h1 { font-size: 1.3rem; color: var(--text); }
+    .result-box h2 { font-size: 1.1rem; color: var(--accent); }
+    .result-box h3 { font-size: 1rem; color: var(--gold); }
+
+    .result-box p { margin-bottom: 0.75rem; }
+
+    .result-box ul, .result-box ol {
+      padding-left: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .result-box li { margin-bottom: 0.3rem; }
+
+    .result-box strong { color: var(--green); }
+
+    .result-box hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 1.25rem 0;
+    }
+
+    .result-box code {
+      background: var(--surface2);
+      border-radius: 4px;
+      padding: 0.15em 0.4em;
+      font-size: 0.875em;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: var(--accent);
+      animation: blink 1s step-end infinite;
+      vertical-align: text-bottom;
+      margin-left: 1px;
+    }
+
+    @keyframes blink { 50% { opacity: 0; } }
+
+    .error-box {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      color: #fca5a5;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <span class="logo-icon">✈️</span>
+      Points Planner
+    </div>
+    <p>Tell us your dream trip — we'll find the best credit cards to sign up for.</p>
+  </header>
+
+  <main>
+    <form id="tripForm">
+      <div class="form-card">
+        <h2>Your Trip</h2>
+        <div class="grid-2">
+          <div class="field">
+            <label for="destination">Destination *</label>
+            <input type="text" id="destination" placeholder="e.g. Tokyo, Japan" required />
+          </div>
+          <div class="field">
+            <label for="origin">Flying from</label>
+            <input type="text" id="origin" placeholder="e.g. New York (JFK)" />
+          </div>
+          <div class="field">
+            <label for="travel_class">Cabin class</label>
+            <select id="travel_class">
+              <option value="economy">Economy</option>
+              <option value="premium economy">Premium Economy</option>
+              <option value="business">Business Class</option>
+              <option value="first">First Class</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="num_travelers">Travelers</label>
+            <select id="num_travelers">
+              <option value="1">1 person</option>
+              <option value="2">2 people</option>
+              <option value="3">3 people</option>
+              <option value="4">4 people</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h2>Preferences (optional)</h2>
+        <div class="grid-2">
+          <div class="field">
+            <label for="preferred_airlines">Preferred airlines</label>
+            <input type="text" id="preferred_airlines" placeholder="e.g. ANA, JAL, United" />
+          </div>
+          <div class="field">
+            <label for="preferred_hotels">Preferred hotels / chains</label>
+            <input type="text" id="preferred_hotels" placeholder="e.g. Hyatt, Marriott" />
+          </div>
+          <div class="field full">
+            <label for="existing_cards">Cards you already have (skip their bonuses)</label>
+            <input type="text" id="existing_cards" placeholder="e.g. Chase Sapphire Reserve, Amex Platinum" />
+          </div>
+          <div class="field full">
+            <label for="flexibility">Anything else to know?</label>
+            <textarea id="flexibility" placeholder="e.g. Open to any airline, want to avoid high annual fees, interested in hotel points too..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="submitBtn">
+        <div class="spinner" id="spinner"></div>
+        <span id="btnText">Find My Best Cards</span>
+      </button>
+    </form>
+
+    <div id="results">
+      <h2>🎯 Your personalized recommendations</h2>
+      <div class="result-box" id="resultContent"></div>
+    </div>
+  </main>
+
+  <script>
+    // Very simple markdown-to-HTML renderer (handles the subset Claude uses)
+    function renderMarkdown(text) {
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        // Headers
+        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+        // Bold + italic
+        .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        // Inline code
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        // HR
+        .replace(/^---+$/gm, '<hr />')
+        // Unordered lists
+        .replace(/^[\s]*[-*] (.+)$/gm, '<li>$1</li>')
+        // Numbered lists
+        .replace(/^[\s]*\d+\. (.+)$/gm, '<li>$1</li>')
+        // Wrap consecutive <li> items
+        .replace(/(<li>.*<\/li>\n?)+/g, (m) => `<ul>${m}</ul>`)
+        // Paragraphs (double newline)
+        .replace(/\n\n([^<])/g, '\n<p>$1')
+        .replace(/([^>])\n\n/g, '$1</p>\n')
+        // Single newlines inside paragraphs become <br>
+        .replace(/([^\n>])\n([^\n<])/g, '$1<br/>$2');
+    }
+
+    const form = document.getElementById('tripForm');
+    const results = document.getElementById('results');
+    const resultContent = document.getElementById('resultContent');
+    const submitBtn = document.getElementById('submitBtn');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btnText');
+
+    let fullText = '';
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const destination = document.getElementById('destination').value.trim();
+      if (!destination) return;
+
+      // Reset UI
+      fullText = '';
+      results.style.display = 'block';
+      resultContent.innerHTML = '<span class="cursor"></span>';
+      submitBtn.disabled = true;
+      spinner.style.display = 'block';
+      btnText.textContent = 'Analyzing...';
+      resultContent.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      const body = {
+        destination,
+        origin: document.getElementById('origin').value.trim(),
+        travel_class: document.getElementById('travel_class').value,
+        num_travelers: document.getElementById('num_travelers').value,
+        preferred_airlines: document.getElementById('preferred_airlines').value.trim(),
+        preferred_hotels: document.getElementById('preferred_hotels').value.trim(),
+        existing_cards: document.getElementById('existing_cards').value.trim(),
+        flexibility: document.getElementById('flexibility').value.trim(),
+      };
+
+      try {
+        const response = await fetch('/api/recommend', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          resultContent.innerHTML = `<div class="error-box">${err.error || 'Something went wrong.'}</div>`;
+          return;
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop();
+
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            const raw = line.slice(6).trim();
+            if (raw === '[DONE]') break;
+            try {
+              const { text } = JSON.parse(raw);
+              fullText += text;
+              resultContent.innerHTML = renderMarkdown(fullText) + '<span class="cursor"></span>';
+            } catch (_) {}
+          }
+        }
+
+        // Final render without cursor
+        resultContent.innerHTML = renderMarkdown(fullText);
+
+      } catch (err) {
+        resultContent.innerHTML = `<div class="error-box">Network error: ${err.message}</div>`;
+      } finally {
+        submitBtn.disabled = false;
+        spinner.style.display = 'none';
+        btnText.textContent = 'Find My Best Cards';
+      }
+    });
+  </script>
+</body>
+</html>
